@@ -13,23 +13,29 @@ ranks entries by net PnL after every fee.
 
 ## Strategy
 
-Confirmed momentum with staged sizing and hard risk exits:
+Capital preservation first, one small sleeve of deliberate risk:
 
-- **Entries** only on curves a few hundred slots old whose recent tape shows
-  broad, accelerating buy pressure: net SOL inflow over a 40-slot window,
-  several distinct buyers, no single wallet dominating, price rising but
-  still near its window high. Fresh bundled launches are skipped.
-- **Sizing** starts with a small feeler buy and pyramids into strength only
-  (price and flow still positive, position not underwater), capped per coin,
-  per order by the harness's 1%-of-reserves cap, and by a total exposure cap.
-- **Exits** sell the whole position on a stop loss, an armed trailing stop,
-  a flow fade (net outflow), or a time limit. Curve completions are closed
-  by the replay itself.
-- **Guardrail probes**: tiny 0.012 SOL round trips on liquid curves, paced
-  against block time, keep the run above the bar of round trips of at least
-  0.01 SOL on at least 20 coins.
-- **End of window**: after 21 h of block time no new risk is opened; after
-  23 h every managed position is sold, so the final score is cash.
+- **Why so quiet**: on the dev window every active design loses heavily —
+  the house momentum pilot grades −9.49 SOL, its reversion pilot −4.00,
+  its sniper −0.47, and an earlier confirmed-momentum version of this bot
+  −4.28 (win rate ~0.10; pyramid adds and fee churn do the damage — each
+  round trip pays ~125 bps of curve fees on both sides plus 105,000
+  lamports per order). Places rank by net PnL and a paid place needs PnL
+  above holding cash, so the bot risks as little as possible while still
+  meeting the guardrails.
+- **Guardrail probes**: tiny 0.011 SOL round trips on liquid curves, paced
+  over the first hours of block time and sold as soon as the buy lands,
+  clear the bar of a ≥0.01 SOL round trip on at least 20 coins (target 24)
+  at minimal fee drag.
+- **Steady-grind sleeve**: the only real risk. At most 5 fixed 0.30 SOL
+  entries (never any adds, at most 2 open) on mature curves whose last
+  120 slots show a slow, broad grind up — net inflow positive in both
+  halves of the window, price up 3–20% with no blow-off second half, many
+  distinct buyers, no single trade dominating. Exits are hard: +14% take
+  profit, −8% stop, flow fade, or a 1,200-slot time limit.
+- **End of window**: sleeve entries stop after 18 h of block time, probes
+  after 16 h, and after 22 h every managed position is sold, so the final
+  score is cash.
 
 The bot is deterministic by construction — no clock, no environment, no
 randomness — so its two graded executions produce identical action logs.
